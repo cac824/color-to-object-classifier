@@ -1,0 +1,76 @@
+import cv2
+import numpy as np
+
+cap = cv2.VideoCapture(0)
+
+if not cap.isOpened():
+    print("Error: Could not open camera.")
+    exit()
+
+# read frames
+while True:
+    ret, frame = cap.read()
+    blue = np.uint8([[[0, 0, 255]]])
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+    blue_lower = np.array([100, 150, 50])
+    blue_upper = np.array([130, 255, 255])
+    green_lower = np.array([40, 50, 50])
+    green_upper = np.array([80, 255, 255])
+    darkred_upper = np.array([10, 255, 255])
+    darkred_lower = np.array([0, 50, 50])
+    lightred_lower = np.array([170, 50, 50])
+    lightred_upper = np.array([180, 255, 255])
+
+    blue_mask = cv2.inRange(hsv, blue_lower, blue_upper)
+    green_mask = cv2.inRange(hsv, green_lower, green_upper)
+    darkred_mask = cv2.inRange(hsv, darkred_lower, darkred_upper)
+    lightred_mask = cv2.inRange(hsv, lightred_lower, lightred_upper)
+
+    blue_count = cv2.countNonZero(blue_mask)
+    green_count = cv2.countNonZero(green_mask)
+    darkred_count = cv2.countNonZero(darkred_mask)
+    lightred_count = cv2.countNonZero(lightred_mask)
+
+    blue_result = cv2.bitwise_and(frame, frame, mask=blue_mask)
+    green_result = cv2.bitwise_and(frame, frame, mask=green_mask)
+    darkred_result = cv2.bitwise_and(frame, frame, mask=darkred_mask)
+    lightred_result = cv2.bitwise_and(frame, frame, mask=lightred_mask)
+
+    # checks if the camera is working
+    if not ret:
+        print("Error: Can't receive frame (stream end?). Exiting ...")
+        break
+
+    if blue_count > 0:
+        cv2.imshow('Blue Result', blue_result)
+    else:
+        if cv2.getWindowProperty('Blue Result', cv2.WND_PROP_VISIBLE) >= 1:
+            cv2.destroyWindow('Blue Result')
+
+    if green_count > 0:
+        cv2.imshow('Green Result', green_result)
+    else:
+        if cv2.getWindowProperty('Green Result', cv2.WND_PROP_VISIBLE) >= 1:
+            cv2.destroyWindow('Green Result')
+
+    if darkred_count > 0:
+        cv2.imshow('Dark Red Result', darkred_result)
+    else:
+        if cv2.getWindowProperty('Dark Red Result', cv2.WND_PROP_VISIBLE) >= 1:
+            cv2.destroyWindow('Dark Red Result')
+
+    if lightred_count > 0:
+        cv2.imshow('Light Red Result', lightred_result)
+    else:
+        if cv2.getWindowProperty('Light Red Result', cv2.WND_PROP_VISIBLE) >= 1:
+            cv2.destroyWindow('Light Red Result')
+
+    # displaying the frame
+    cv2.imshow('Camera', frame)
+
+    if cv2.waitKey(1) == ord('q'):
+        break
+
+cap.release()
+cv2.destroyAllWindows()
