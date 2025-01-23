@@ -1,0 +1,77 @@
+import cv2
+from face_detection import load_face_cascade, detect_faces
+from object_detection import detect_objects
+from functions import draw_bounding_boxes, blue_lower, blue_upper, green_lower, green_upper, darkred_lower, darkred_upper, lightred_lower, lightred_upper
+
+
+cap = cv2.VideoCapture(0)
+
+if not cap.isOpened():
+    print("Error: Could not open camera.")
+    exit()
+
+face_cascade = load_face_cascade('haarcascade_frontalface_default.xml')
+
+while True:
+    ret, frame = cap.read()
+
+    if not ret:
+        print("Error: Can't receive frame.")
+        break
+
+    hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
+
+    blue_mask = cv2.inRange(hsv, blue_lower, blue_upper)
+    green_mask = cv2.inRange(hsv, green_lower, green_upper)
+    darkred_mask = cv2.inRange(hsv, darkred_lower, darkred_upper)
+    lightred_mask = cv2.inRange(hsv, lightred_lower, lightred_upper)
+
+    blue_result = cv2.bitwise_and(frame, frame, mask=blue_mask)
+    green_result = cv2.bitwise_and(frame, frame, mask=green_mask)
+    darkred_result = cv2.bitwise_and(frame, frame, mask=darkred_mask)
+    lightred_result = cv2.bitwise_and(frame, frame, mask=lightred_mask)
+
+    blue_count = cv2.countNonZero(blue_mask)
+    green_count = cv2.countNonZero(green_mask)
+    darkred_count = cv2.countNonZero(darkred_mask)
+    lightred_count = cv2.countNonZero(lightred_mask)
+
+    if blue_count > 0:
+        cv2.imshow('Blue Result', blue_result)
+    else:
+        if cv2.getWindowProperty('Blue Result', cv2.WND_PROP_VISIBLE) >= 1:
+            cv2.destroyWindow('Blue Result')
+
+    if green_count > 0:
+        cv2.imshow('Green Result', green_result)
+    else:
+        if cv2.getWindowProperty('Green Result', cv2.WND_PROP_VISIBLE) >= 1:
+            cv2.destroyWindow('Green Result')
+
+    if darkred_count > 0:
+        cv2.imshow('Dark Red Result', darkred_result)
+    else:
+        if cv2.getWindowProperty('Dark Red Result', cv2.WND_PROP_VISIBLE) >= 1:
+            cv2.destroyWindow('Dark Red Result')
+
+    if lightred_count > 0:
+        cv2.imshow('Light Red Result', lightred_result)
+    else:
+        if cv2.getWindowProperty('Light Red Result', cv2.WND_PROP_VISIBLE) >= 1:
+            cv2.destroyWindow('Light Red Result')
+
+    faces = detect_faces(frame, face_cascade)
+    draw_bounding_boxes(frame, faces, color=(255, 255, 255))
+
+    cv2.imshow('Blue Result', blue_result)
+    cv2.imshow('Green Result', green_result)
+    cv2.imshow('Dark Red Result', darkred_result)
+    cv2.imshow('Light Red Result', lightred_result)
+
+    cv2.imshow('Frame', frame)
+
+    if cv2.waitKey(1) == ord('q'):
+        break
+
+cap.release()
+cv2.destroyAllWindows()
