@@ -1,8 +1,8 @@
 import cv2
 from face_detection import load_face_cascade, detect_faces
 from object_detection import detect_objects
-from functions import draw_bounding_boxes, blue_lower, blue_upper, green_lower, green_upper, darkred_lower, darkred_upper, lightred_lower, lightred_upper
-
+from functions import draw_bounding_boxes, blue_lower, blue_upper, green_lower, green_upper, darkred_lower, \
+    darkred_upper, lightred_lower, lightred_upper
 
 cap = cv2.VideoCapture(0)
 
@@ -26,6 +26,24 @@ while True:
     darkred_mask = cv2.inRange(hsv, darkred_lower, darkred_upper)
     lightred_mask = cv2.inRange(hsv, lightred_lower, lightred_upper)
 
+    blue_contours, _ = cv2.findContours(blue_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    green_contours, _ = cv2.findContours(green_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    darkred_contours, _ = cv2.findContours(darkred_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    lightred_contours, _ = cv2.findContours(lightred_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    for blue_contour in blue_contours:
+        x, y, w, h = cv2.boundingRect(blue_contour)
+        cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
+    for green_contour in green_contours:
+        x, y, w, h = cv2.boundingRect(green_contour)
+        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+    for darkred_contour in darkred_contours:
+        x, y, w, h = cv2.boundingRect(darkred_contour)
+        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 139), 2)
+    for lightred_contour in lightred_contours:
+        x, y, w, h = cv2.boundingRect(lightred_contour)
+        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
+
     blue_result = cv2.bitwise_and(frame, frame, mask=blue_mask)
     green_result = cv2.bitwise_and(frame, frame, mask=green_mask)
     darkred_result = cv2.bitwise_and(frame, frame, mask=darkred_mask)
@@ -36,37 +54,8 @@ while True:
     darkred_count = cv2.countNonZero(darkred_mask)
     lightred_count = cv2.countNonZero(lightred_mask)
 
-    if blue_count > 0:
-        cv2.imshow('Blue Result', blue_result)
-    else:
-        if cv2.getWindowProperty('Blue Result', cv2.WND_PROP_VISIBLE) >= 1:
-            cv2.destroyWindow('Blue Result')
-
-    if green_count > 0:
-        cv2.imshow('Green Result', green_result)
-    else:
-        if cv2.getWindowProperty('Green Result', cv2.WND_PROP_VISIBLE) >= 1:
-            cv2.destroyWindow('Green Result')
-
-    if darkred_count > 0:
-        cv2.imshow('Dark Red Result', darkred_result)
-    else:
-        if cv2.getWindowProperty('Dark Red Result', cv2.WND_PROP_VISIBLE) >= 1:
-            cv2.destroyWindow('Dark Red Result')
-
-    if lightred_count > 0:
-        cv2.imshow('Light Red Result', lightred_result)
-    else:
-        if cv2.getWindowProperty('Light Red Result', cv2.WND_PROP_VISIBLE) >= 1:
-            cv2.destroyWindow('Light Red Result')
-
     faces = detect_faces(frame, face_cascade)
-    draw_bounding_boxes(frame, faces, color=(255, 255, 255))
-
-    cv2.imshow('Blue Result', blue_result)
-    cv2.imshow('Green Result', green_result)
-    cv2.imshow('Dark Red Result', darkred_result)
-    cv2.imshow('Light Red Result', lightred_result)
+    draw_bounding_boxes(frame, faces, "Face", color=(255, 255, 255))
 
     cv2.imshow('Frame', frame)
 
