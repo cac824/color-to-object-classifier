@@ -1,4 +1,5 @@
 import cv2
+import numpy as np
 from face_detection import load_face_cascade, detect_faces
 from object_detection import detect_objects
 from functions import draw_bounding_boxes, blue_lower, blue_upper, green_lower, green_upper, darkred_lower, \
@@ -31,28 +32,19 @@ while True:
     darkred_contours, _ = cv2.findContours(darkred_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     lightred_contours, _ = cv2.findContours(lightred_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    for blue_contour in blue_contours:
-        x, y, w, h = cv2.boundingRect(blue_contour)
-        cv2.rectangle(frame, (x, y), (x + w, y + h), (255, 0, 0), 2)
-    for green_contour in green_contours:
-        x, y, w, h = cv2.boundingRect(green_contour)
-        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-    for darkred_contour in darkred_contours:
-        x, y, w, h = cv2.boundingRect(darkred_contour)
-        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 139), 2)
-    for lightred_contour in lightred_contours:
-        x, y, w, h = cv2.boundingRect(lightred_contour)
-        cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 0, 255), 2)
+    def merge_points(contour, color):
+        if contour:
+            merged_points = np.vstack(contour)
+            np.array(merged_points, dtype=np.int32)
+            x, y, w, h = cv2.boundingRect(merged_points)
+            cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
+        else:
+            print("{} not found".format(color))
 
-    blue_result = cv2.bitwise_and(frame, frame, mask=blue_mask)
-    green_result = cv2.bitwise_and(frame, frame, mask=green_mask)
-    darkred_result = cv2.bitwise_and(frame, frame, mask=darkred_mask)
-    lightred_result = cv2.bitwise_and(frame, frame, mask=lightred_mask)
-
-    blue_count = cv2.countNonZero(blue_mask)
-    green_count = cv2.countNonZero(green_mask)
-    darkred_count = cv2.countNonZero(darkred_mask)
-    lightred_count = cv2.countNonZero(lightred_mask)
+    merge_points(blue_contours, (255, 0, 0))
+    merge_points(green_contours, (0, 255, 0))
+    merge_points(darkred_contours, (0, 0, 139))
+    merge_points(lightred_contours, (0, 0, 255))
 
     faces = detect_faces(frame, face_cascade)
     draw_bounding_boxes(frame, faces, "Face", color=(255, 255, 255))
