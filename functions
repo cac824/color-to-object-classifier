@@ -18,9 +18,9 @@ blue_upper = np.array([130, 255, 255])
 green_lower = np.array([40, 100, 50])
 green_upper = np.array([80, 255, 255])
 
-darkred_lower = np.array([0, 100, 100])
+darkred_lower = np.array([0, 150, 150])
 darkred_upper = np.array([10, 255, 255])
 
-lightred_lower = np.array([0, 100, 50])
-lightred_upper = np.array([0, 255, 255])
+lightred_lower = np.array([170, 150, 150])
+lightred_upper = np.array([180, 255, 255])
 
