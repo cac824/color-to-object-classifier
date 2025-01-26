@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 from face_detection import load_face_cascade, detect_faces
-from object_detection import detect_objects
+from object_detection import load_object_model, detect_object
 from functions import draw_bounding_boxes, blue_lower, blue_upper, green_lower, green_upper, darkred_lower, \
     darkred_upper, lightred_lower, lightred_upper
 
@@ -11,7 +11,7 @@ if not cap.isOpened():
     print("Error: Could not open camera.")
     exit()
 
-face_cascade = load_face_cascade('haarcascade_frontalface_default.xml')
+face_cascade = load_face_cascade('haarcascade_frontalface_default.xml') # loads the face detection model
 
 while True:
     ret, frame = cap.read()
@@ -21,19 +21,19 @@ while True:
         break
 
     hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-
+    # creates the masks where the detect colors are shown
     blue_mask = cv2.inRange(hsv, blue_lower, blue_upper)
     green_mask = cv2.inRange(hsv, green_lower, green_upper)
     darkred_mask = cv2.inRange(hsv, darkred_lower, darkred_upper)
     lightred_mask = cv2.inRange(hsv, lightred_lower, lightred_upper)
-
+    # this finds all the boundaries of an object
     blue_contours, _ = cv2.findContours(blue_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     green_contours, _ = cv2.findContours(green_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     darkred_contours, _ = cv2.findContours(darkred_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     lightred_contours, _ = cv2.findContours(lightred_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    def merge_points(contour, color):
-        if contour:
+    def merge_points(contour, color): # this function merges all points together to make one big box to reduce many box appearing and clogging up the screen
+        if contour: # checks if the given contour is shown
             merged_points = np.vstack(contour)
             np.array(merged_points, dtype=np.int32)
             x, y, w, h = cv2.boundingRect(merged_points)
@@ -46,8 +46,10 @@ while True:
     merge_points(darkred_contours, (0, 0, 139))
     merge_points(lightred_contours, (0, 0, 255))
 
-    faces = detect_faces(frame, face_cascade)
-    draw_bounding_boxes(frame, faces, "Face", color=(255, 255, 255))
+    faces = detect_faces(frame, face_cascade) # detects the face
+    detect_object(frame)
+
+    draw_bounding_boxes(frame, faces, "Face", color=(255, 255, 255)) # draws all the boxes for color detection
 
     cv2.imshow('Frame', frame)
 
