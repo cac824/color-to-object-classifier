@@ -1,3 +1,30 @@
-# object detection logic
-def detect_objects():
-    print("Not here yet")
+import cv2
+import numpy as np
+
+classes = ["Background", "Aeroplane", "Bicycle", "Bird", "Boat", "Bottle", "Bus", "Car", "Cat", "Chair", "Cow", "Dining Table", "Dog", "Horse", "Motorbike", "Person", "Potted Plant", "Sheep", "Sofa", "Train", "TV Monitor"]
+
+
+def load_object_model():
+    net = cv2.dnn.readNetFromCaffe('deploy.prototxt', 'mobilenet_iter_73000.caffemodel')
+    return net
+
+
+def detect_object(image):
+    net = load_object_model()
+    blob = blob = cv2.dnn.blobFromImage(image, 0.007843, (300, 300), (127.5, 127.5, 127.5), swapRB=True)
+    net.setInput(blob)
+    detections = net.forward()
+
+    for detection in detections[0, 0, :, :]:
+        confidence = detection[2]
+        if confidence > 0.5:
+            class_id = int(detection[1])
+            class_name = classes[class_id]
+            box = detection[3:7] * np.array([image.shape[1], image.shape[0], image.shape[1], image.shape[0]])
+            (startX, startY, endX, endY) = box.astype("int")
+
+            cv2.rectangle(image, (startX, startY), (endX, endY), (255, 255, 255), 2)
+            cv2.putText(image, class_name, (startX, startY - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 2)
+
+
+
