@@ -2,11 +2,11 @@
 import cv2
 
 
-def load_face_cascade(cascade_path):
+def load_face_cascade(cascade_path): # loads the face detection model
     return cv2.CascadeClassifier(cascade_path)
 
 
-def detect_faces(frame, face_cascade):
+def detect_faces(frame, face_cascade): # detects the faces using the model
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     faces = face_cascade.detectMultiScale(gray, scaleFactor=1.1, minNeighbors=5)
     return faces
