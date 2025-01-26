@@ -1,9 +1,10 @@
 # small functions for the whole project
+
 import cv2
 import numpy as np
 
 
-def draw_bounding_boxes(frame, boxes, label, color=(255, 0, 0)):
+def draw_bounding_boxes(frame, boxes, label, color=(255, 0, 0)): # draws all the boxes for detected colors
     for (x, y, w, h) in boxes:
         cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
         label = label
