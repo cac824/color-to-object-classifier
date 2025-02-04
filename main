@@ -3,7 +3,7 @@ import numpy as np
 from face_detection import load_face_cascade, detect_faces
 from object_detection import detect_object
 from functions import draw_bounding_boxes, blue_lower, blue_upper, green_lower, green_upper, darkred_lower, \
-    darkred_upper, lightred_lower, lightred_upper
+    darkred_upper, lightred_lower, lightred_upper, yellow_upper, yellow_lower, orange_upper, orange_lower
 
 cap = cv2.VideoCapture(0)
 frame_count = 0
@@ -27,21 +27,27 @@ while True:
     green_mask = cv2.inRange(hsv, green_lower, green_upper)
     darkred_mask = cv2.inRange(hsv, darkred_lower, darkred_upper)
     lightred_mask = cv2.inRange(hsv, lightred_lower, lightred_upper)
-    # this finds all the boundaries of an object
+    orange_mask = cv2.inRange(hsv, orange_lower, orange_upper)
+    yellow_mask = cv2.inRange(hsv, yellow_lower, yellow_upper)
+    # this finds all the boundaries of an object, the _ is used to hold the unnecessary values that's not needed
     blue_contours, _ = cv2.findContours(blue_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     green_contours, _ = cv2.findContours(green_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     darkred_contours, _ = cv2.findContours(darkred_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     lightred_contours, _ = cv2.findContours(lightred_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    orange_contours, _ = cv2.findContours(orange_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    yellow_contours, _ = cv2.findContours(yellow_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     # count of pixels
     blue_count = cv2.countNonZero(blue_mask)
     green_count = cv2.countNonZero(green_mask)
     darkred_count = cv2.countNonZero(darkred_mask)
     lightred_count = cv2.countNonZero(lightred_mask)
+    orange_count = cv2.countNonZero(orange_mask)
+    yellow_count = cv2.countNonZero(yellow_mask)
 
 
     def merge_points(contour, count, color):  # this function merges all points together to make one big box to reduce many box appearing and clogging up the screen
-        if contour and count > 100:  # checks if the given contour is shown and if the count of pixels are greater than 100 to stop random dots of colors appearing
-            merged_points = np.vstack(contour)
+        if contour and count > 2000:  # checks if the given contour is shown and if the count of pixels are greater than 100 to stop random dots of colors appearing
+            merged_points = np.vstack(contour).squeeze()
             np.array(merged_points, dtype=np.int32)
             x, y, w, h = cv2.boundingRect(merged_points)
             if color == (255, 0, 0):
@@ -50,6 +56,10 @@ while True:
                 text = "Green"
             if color == (0, 0, 255) or color == (0, 0, 139):
                 text = "Red"
+            if color == (10, 100, 255):
+                text = "Orange"
+            if color == (40, 255, 255):
+                text = "Yellow"
 
             cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
             font = cv2.FONT_HERSHEY_SIMPLEX
@@ -58,13 +68,14 @@ while True:
             print("{} not found".format(color))
 
 
-    detect_object(frame)
-
     merge_points(blue_contours, blue_count, (255, 0, 0))
     merge_points(green_contours, green_count, (0, 255, 0))
     merge_points(darkred_contours, darkred_count, (0, 0, 139))
     merge_points(lightred_contours, lightred_count, (0, 0, 255))
+    merge_points(orange_contours, orange_count,  (10, 100, 255))
+    merge_points(yellow_contours, yellow_count, (40, 255, 255))
 
+    detect_object(frame)  # detects objects
     faces = detect_faces(frame, face_cascade)  # detects the face
 
     draw_bounding_boxes(frame, faces, "Face", color=(255, 255, 255))  # draws all the boxes for color detection
