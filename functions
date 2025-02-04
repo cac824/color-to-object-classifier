@@ -12,7 +12,7 @@ def draw_bounding_boxes(frame, boxes, label, color=(255, 0, 0)): # draws all the
         cv2.putText(frame, label, (x, y - 10), font, 1, (255, 255, 255), 2, cv2.LINE_AA)
 
 
-# ranges for red, blue and green
+# ranges for red, blue, green, yellow and orange
 blue_lower = np.array([100, 150, 50])
 blue_upper = np.array([130, 255, 255])
 
@@ -24,4 +24,10 @@ darkred_upper = np.array([10, 255, 255])
 
 lightred_lower = np.array([170, 150, 150])
 lightred_upper = np.array([180, 255, 255])
+
+yellow_lower = np.array([20, 100, 100])
+yellow_upper = np.array([40, 255, 255])
+
+orange_lower = np.array([5, 150, 150])
+orange_upper = np.array([15, 255, 255])
 
