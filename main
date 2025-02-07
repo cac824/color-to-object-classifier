@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import pyttsx3
 from face_detection import load_face_cascade, detect_faces
 from object_detection import detect_object
 from functions import draw_bounding_boxes, blue_lower, blue_upper, green_lower, green_upper, darkred_lower, \
@@ -7,6 +8,7 @@ from functions import draw_bounding_boxes, blue_lower, blue_upper, green_lower, 
 
 cap = cv2.VideoCapture(0)
 frame_count = 0
+engine = pyttsx3.init()  # initializes the text to speech
 
 if not cap.isOpened():
     print("Error: Could not open camera.")
@@ -37,29 +39,41 @@ while True:
     orange_contours, _ = cv2.findContours(orange_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     yellow_contours, _ = cv2.findContours(yellow_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
     # count of pixels
-    blue_count = cv2.countNonZero(blue_mask)
-    green_count = cv2.countNonZero(green_mask)
-    darkred_count = cv2.countNonZero(darkred_mask)
-    lightred_count = cv2.countNonZero(lightred_mask)
-    orange_count = cv2.countNonZero(orange_mask)
-    yellow_count = cv2.countNonZero(yellow_mask)
+    blue_zeropoint = cv2.countNonZero(blue_mask)
+    green_zeropoint = cv2.countNonZero(green_mask)
+    darkred_zeropoint = cv2.countNonZero(darkred_mask)
+    lightred_zeropoint = cv2.countNonZero(lightred_mask)
+    orange_zeropoint = cv2.countNonZero(orange_mask)
+    yellow_zeropoint = cv2.countNonZero(yellow_mask)
 
 
     def merge_points(contour, count, color):  # this function merges all points together to make one big box to reduce many box appearing and clogging up the screen
         if contour and count > 2000:  # checks if the given contour is shown and if the count of pixels are greater than 100 to stop random dots of colors appearing
             merged_points = np.vstack(contour).squeeze()
+            thresh_w = 20
+            thresh_h = 20
             np.array(merged_points, dtype=np.int32)
             x, y, w, h = cv2.boundingRect(merged_points)
             if color == (255, 0, 0):
                 text = "Blue"
+                engine.say("Blue")
+                engine.runAndWait()
             if color == (0, 255, 0):
                 text = "Green"
+                engine.say("Green")
+                engine.runAndWait()
             if color == (0, 0, 255) or color == (0, 0, 139):
                 text = "Red"
+                engine.say("Red")
+                engine.runAndWait()
             if color == (10, 100, 255):
                 text = "Orange"
+                engine.say("Orange")
+                engine.runAndWait()
             if color == (40, 255, 255):
                 text = "Yellow"
+                engine.say("Yellow")
+                engine.runAndWait()
 
             cv2.rectangle(frame, (x, y), (x + w, y + h), color, 2)
             font = cv2.FONT_HERSHEY_SIMPLEX
@@ -68,12 +82,12 @@ while True:
             print("{} not found".format(color))
 
 
-    merge_points(blue_contours, blue_count, (255, 0, 0))
-    merge_points(green_contours, green_count, (0, 255, 0))
-    merge_points(darkred_contours, darkred_count, (0, 0, 139))
-    merge_points(lightred_contours, lightred_count, (0, 0, 255))
-    merge_points(orange_contours, orange_count,  (10, 100, 255))
-    merge_points(yellow_contours, yellow_count, (40, 255, 255))
+    merge_points(blue_contours, blue_zeropoint, (255, 0, 0))
+    merge_points(green_contours, green_zeropoint, (0, 255, 0))
+    merge_points(darkred_contours, darkred_zeropoint, (0, 0, 139))
+    merge_points(lightred_contours, lightred_zeropoint, (0, 0, 255))
+    merge_points(orange_contours, orange_zeropoint,  (10, 100, 255))
+    merge_points(yellow_contours, yellow_zeropoint, (40, 255, 255))
 
     detect_object(frame)  # detects objects
     faces = detect_faces(frame, face_cascade)  # detects the face
